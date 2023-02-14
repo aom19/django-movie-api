@@ -3,7 +3,23 @@
 from rest_framework import serializers
 from .models import Movie, Genre, Actor, Rating, Review
 
+# _______helpers
 
+
+
+class RecursiveSerializer(serializers.Serializer):
+    def to_representation(self, value):
+        serializer = self.parent.parent.__class__(value, context=self.context)
+        return serializer.data
+
+
+class FilterReviewListAPIView(serializers.ListSerializer):
+    def to_representation(self, data):
+        data = data.filter(parent=None)
+        return super().to_representation(data)
+
+
+# ________________________________________________________________________
 class MovieListSerializer(serializers.ModelSerializer):
 
 
@@ -11,13 +27,26 @@ class MovieListSerializer(serializers.ModelSerializer):
         model = Movie
         fields = ("id", "title", "tagline", "category", )
 
+class ReviewCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = "__all__"
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    children = RecursiveSerializer(many=True)
+    class Meta:
+        list_serializer_class = FilterReviewListAPIView
+        model = Review
+        fields = ("name", "text",  "children")
+
 
 class MovieDetailSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(slug_field="name", read_only=True),
     directors = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
     actors = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
     genres = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
-
+    reviews = ReviewSerializer(many=True)
 
     class Meta:
         model = Movie
@@ -25,8 +54,7 @@ class MovieDetailSerializer(serializers.ModelSerializer):
 
 
 
-class ReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Review
-        fields = "__all__"
-         
+
+
+
+
