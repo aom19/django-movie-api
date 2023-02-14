@@ -8,7 +8,7 @@ from ckeditor_uploader.widgets import CKEditorUploadingWidget
 from django import forms
 
 
-from .models import Movie, Genre, Review, Rating, Actor, MovieShots
+from .models import Movie, Genre, Review, Rating, Actor, MovieShots,Category
 
 class MovieAdminForm(forms.ModelForm):
     description = forms.CharField(widget=CKEditorUploadingWidget())
@@ -55,7 +55,7 @@ class MovieAdmin(admin.ModelAdmin):
         }),
         ('Actors', {
             'classes': ('collapse',),
-            'fields': (('actors', 'directors', 'genres'),)
+            'fields': (('actors', 'directors', 'genres' , 'category'),)
         }),
         (None, {
             'fields': (('budget', 'fees_in_usa', 'fees_in_world'),)
@@ -102,3 +102,9 @@ class MovieShotsAdmin(admin.ModelAdmin):
         return mark_safe(f'<img src={obj.image.url} width="50" height="60">')
 
     get_image.short_description = 'Изображение'
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'url')
+    list_display_links = ('name',)
