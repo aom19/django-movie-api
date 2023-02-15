@@ -18,11 +18,26 @@ class FilterReviewListAPIView(serializers.ListSerializer):
         return super().to_representation(data)
 
 
-# ________________________________________________________________________
+# _______________________________________________________________________
+
+
+class ActorListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Actor
+        fields = ("id", "name", "image")
+
+
+class ActorDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Actor
+        fields = "__all__"
+
+
 class MovieListSerializer(serializers.ModelSerializer):
 
     rating_user = serializers.BooleanField()
     middle_star = serializers.FloatField()
+
     class Meta:
         model = Movie
         fields = ("id", "title", "tagline", "category", "rating_user",  "middle_star" )
@@ -46,7 +61,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 class MovieDetailSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(slug_field="name", read_only=True),
     directors = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
-    actors = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
+    actors = ActorListSerializer(read_only=True, many=True)
     genres = serializers.SlugRelatedField(slug_field="name", read_only=True, many=True)
     reviews = ReviewSerializer(many=True)
 
@@ -62,7 +77,7 @@ class CreateRatingSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
 
-        rating = Rating.objects.update_or_create(
+        rating, _ = Rating.objects.update_or_create(
             ip=validated_data.get('ip', None),
             movie=validated_data.get('movie', None),
             defaults={'star': validated_data.get("star")}
