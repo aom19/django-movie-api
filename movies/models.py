@@ -2,6 +2,7 @@ from django.db import models
 from   django.urls    import reverse
 # Create your models here.
 
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -13,7 +14,6 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'Category'
         verbose_name_plural = 'Categories'
-
 
 
 class Actor(models.Model):
@@ -94,30 +94,35 @@ class RatingStar(models.Model):
     value = models.SmallIntegerField(default=0)
 
     def __str__(self):
-        return self.value
+        return f'{self.value}'
 
     class Meta:
         verbose_name = 'RatingStar'
         verbose_name_plural = 'RatingStars'
+        ordering = ["-value"]
 
 
 class Rating(models.Model):
     ip = models.CharField(max_length=15)
-    star = models.ForeignKey(RatingStar, on_delete=models.CASCADE)
-    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    star = models.ForeignKey(RatingStar, on_delete=models.CASCADE, )
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='ratings')
 
     def __str__(self):
-        return self.star
+        return f"{self.star} - {self.movie}"
 
     class Meta:
         verbose_name = 'Rating'
         verbose_name_plural = 'Ratings'
 
+
+
 class Review(models.Model):
     email = models.EmailField()
     name = models.CharField(max_length=100)
     text = models.TextField(max_length=5000)
-    parent = models.ForeignKey('self', verbose_name='Parent', on_delete=models.SET_NULL, blank=True, null=True , related_name='children')
+    parent = models.ForeignKey('self', verbose_name='Parent', on_delete=models.SET_NULL,
+                               blank=True, null=True,related_name='children'
+                               )
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE , related_name='reviews')
 
     def __str__(self):
