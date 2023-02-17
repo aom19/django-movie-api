@@ -1,6 +1,8 @@
 
 from django_filters import rest_framework as filters
 from .models import Movie
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
 
 def get_client_ip(request):
@@ -14,6 +16,8 @@ def get_client_ip(request):
 
 class CharFilterInFilter(filters.BaseInFilter, filters.CharFilter):
     pass
+
+
 class MovieFilter(filters.FilterSet):
     year = filters.RangeFilter()
     genre = filters.CharFilter(field_name="genres__name", lookup_expr="in")
@@ -21,3 +25,18 @@ class MovieFilter(filters.FilterSet):
     class Meta:
         model = Movie
         fields = ['year', 'genre']
+
+
+class PaginationMovies(PageNumberPagination):
+    page_size = 1
+    max_page_size = 100
+
+    def get_paginated_response(self, data):
+        return Response({
+            'links': {
+                'next': self.get_next_link(),
+                'previous': self.get_previous_link()
+            },
+            'count': self.page.paginator.count,
+            'results': data
+        })
